@@ -4,20 +4,36 @@ export const getTasks = (req,res)=>{
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search?.toLowerCase() || '';
 
-        const startIndex = page * limit;
+        let filteredTasks = tasks.filter(task => 
+            task.title.toLowerCase().includes(search) || 
+            task.description.toLowerCase().includes(search)
+        );
+
+        const startIndex = (page-1) * limit;
         const endIndex = startIndex + limit;
 
-        const paginatedTasks = tasks.slice(startIndex, endIndex);
-
-        return res.status(200).json({
+        const paginatedTasks = filteredTasks.slice(startIndex, endIndex);
+        paginatedTasks.length > 0 ?  res.status(200).json({
             message: "Tasks fetched successfully",
             tasks: paginatedTasks,
             page,
             limit,
-            totalTasks: tasks.length,
-            totalPages: Math.ceil(tasks.length / limit),
+            totalTasks: paginatedTasks.length,
+            totalPages: Math.ceil(paginatedTasks.length / limit),
+        })
+        :
+        res.status(200).json({
+            message: "No tasks found",
+            tasks: paginatedTasks,
+            page,
+            limit,
+            totalTasks: paginatedTasks.length,
+            totalPages: Math.ceil(paginatedTasks.length / limit),
         });
+
+        
     } catch (error) {
         res.status(500).json({message:"Internal sever error",error:error.message})
     }
