@@ -2,8 +2,22 @@ let tasks = []
 
 export const getTasks = (req,res)=>{
     try {
-        const id = parseInt(req.params.id)
-        return res.status(200).json({message:"tasks fetched successfully", tasks})
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const startIndex = page * limit;
+        const endIndex = startIndex + limit;
+
+        const paginatedTasks = tasks.slice(startIndex, endIndex);
+
+        return res.status(200).json({
+            message: "Tasks fetched successfully",
+            tasks: paginatedTasks,
+            page,
+            limit,
+            totalTasks: tasks.length,
+            totalPages: Math.ceil(tasks.length / limit),
+        });
     } catch (error) {
         res.status(500).json({message:"Internal sever error",error:error.message})
     }
